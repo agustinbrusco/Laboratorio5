@@ -1,9 +1,10 @@
-from typing import Tuple, Callable
+from typing import Callable, Tuple
+
+import cv2 as cv
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.constants as cte
 from scipy.signal import find_peaks
-import cv2 as cv
-import matplotlib.pyplot as plt
 
 
 def balmer_wavelength(n: int) -> float:  # m
