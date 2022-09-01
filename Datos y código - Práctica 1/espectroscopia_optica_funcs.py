@@ -65,6 +65,12 @@ def get_linear_transformation(x0: float, x1: float,
     return lambda x: m*x + b
 
 
+def get_column_intensity(file: str) -> np.ndarray:
+    img = cv.imread(file,)
+    grayscale = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    return np.sum(grayscale, axis=0)/grayscale.shape[0]
+
+
 def get_wavelength_from_He(He_file: str) -> np.ndarray:
     '''Dada una imagen tomada del monocromador en la que se observan las
     lineas del helio, compara los máximos de intensidad medidos con los
@@ -74,11 +80,7 @@ def get_wavelength_from_He(He_file: str) -> np.ndarray:
     que es medida en la i-ésima columna de pixeles en una imagen tomada con
     el monocromador y la cámara colocados en la misma posición.
     '''
-    img = cv.imread(He_file,)  # Carga de la imagen con OpenCV
-    grises = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # Conversión a grayscale
-    intensidad = (np.sum(grises, axis=0)
-                  / grises.shape[0])  # a.u. : Promedio a lo largo de columnas
-
+    intensidad = get_column_intensity(He_file)  # a.u.
     peaks = find_peaks(intensidad,  # Indices de los picos de intensidad
                        prominence=10,
                        distance=20)
