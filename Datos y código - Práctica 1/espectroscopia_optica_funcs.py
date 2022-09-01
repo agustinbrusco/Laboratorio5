@@ -3,6 +3,7 @@ import numpy as np
 import scipy.constants as cte
 from scipy.signal import find_peaks
 import cv2 as cv
+import matplotlib.pyplot as plt
 
 
 def balmer_wavelength(n: int) -> float:  # m
@@ -56,6 +57,23 @@ def wavelength_to_RGB(wavelength: float) -> Tuple[float, float, float, ]:
         G = 1.0
         B = 1.0
     return (R, G, B,)
+
+
+def scatter_wavelengths(wavelengths: np.ndarray,
+                        intensity: np.ndarray,) -> None:
+    '''Grafica un scatterplot de intensidad en función de la longitud
+    de onda en el que los puntos se encuentran coloreados acordemente
+    al color de la luz con esta longitud de onda en nanometros.
+    '''
+    plt.plot(wavelengths, intensity, '--k', lw=0.5, alpha=0.5)
+    plt.scatter(wavelengths, intensity,
+                s=8*np.log(np.e + 6*intensity/np.max(intensity)),
+                c=[wavelength_to_RGB(lam) for lam in wavelengths],
+                linewidths=0.15, edgecolors='k', zorder=10)
+    plt.grid(True)
+    plt.xlabel('Longitud de onda [nm]')
+    plt.ylabel('Intensidad [a.u]')
+    return None
 
 
 def get_linear_transformation(x0: float, x1: float,
