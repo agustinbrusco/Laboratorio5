@@ -1,7 +1,8 @@
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Union
 
 import cv2 as cv
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import numpy as np
 import scipy.constants as cte
 from scipy.signal import find_peaks
@@ -62,26 +63,26 @@ def wavelength_to_RGB(wavelength: float) -> Tuple[float, float, float, ]:
 
 def scatter_wavelengths(wavelengths: np.ndarray,
                         intensity: np.ndarray,
-                        axes=None) -> None:
-    '''Grafica un scatterplot de intensidad en función de la longitud
-    de onda en el que los puntos se encuentran coloreados acordemente
-    al color de la luz con esta longitud de onda en nanometros.
+                        linecolor: str = 'k', axes=None) -> None:
+    '''Grafica un scatterplot de intensidad en función de la longitud de onda en
+    el que los puntos se encuentran coloreados acordemente al color de la luz
+    con esta longitud de onda en nanometros.
     '''
     if axes is None:
-        plt.plot(wavelengths, intensity, '--k', lw=0.5, alpha=0.5)
+        plt.plot(wavelengths, intensity, f'--{linecolor}', lw=0.5, alpha=0.5)
         plt.scatter(wavelengths, intensity,
                     s=8*np.log(np.e + 6*intensity/np.max(intensity)),
                     c=[wavelength_to_RGB(lam) for lam in wavelengths],
-                    linewidths=0.15, edgecolors='k', zorder=10)
+                    linewidths=0.15, edgecolors=linecolor, zorder=10)
         plt.grid(True)
         plt.xlabel('Longitud de onda [nm]')
         plt.ylabel('Intensidad [a.u]')
     else:
-        axes.plot(wavelengths, intensity, '--k', lw=0.5, alpha=0.5)
+        axes.plot(wavelengths, intensity, f'--{linecolor}', lw=0.5, alpha=0.5)
         axes.scatter(wavelengths, intensity,
                      s=8*np.log(np.e + 6*intensity/np.max(intensity)),
                      c=[wavelength_to_RGB(lam) for lam in wavelengths],
-                     linewidths=0.15, edgecolors='k', zorder=10)
+                     linewidths=0.15, edgecolors=linecolor, zorder=10)
         axes.grid(True)
         axes.set_xlabel('Longitud de onda [nm]')
         axes.set_ylabel('Intensidad [a.u]')
@@ -110,11 +111,11 @@ def get_wavelength_from_He(He_file: str) -> np.ndarray:
     que es medida en la i-ésima columna de pixeles en una imagen tomada con
     el monocromador y la cámara colocados en la misma posición.
     '''
-    intensidad = get_column_intensity(He_file)  # a.u.
-    peaks = find_peaks(intensidad,  # Indices de los picos de intensidad
+    intensity = get_column_intensity(He_file)  # a.u.
+    peaks = find_peaks(intensity,  # Indices de los picos de intensidad
                        prominence=10,
                        distance=20)
-    peak_vals = intensidad[peaks[0]]  # a.u. : Intensidad medida en los máximos
+    peak_vals = intensity[peaks[0]]  # a.u. : Intensidad medida en los máximos
     order_max_max = np.argmax(peak_vals)  # Índice del máximo de intensidad
     if order_max_max == 0:  # Considero los primeros dos máximos detectados
         x0, x1 = peaks[0][:2]
@@ -124,4 +125,41 @@ def get_wavelength_from_He(He_file: str) -> np.ndarray:
         x0, x1 = peaks[0][[order_max_max-1, order_max_max]]
         pixel_to_wavelen = get_linear_transformation(x0, x1,
                                                      y0=502.60, y1=588.87)
-    return pixel_to_wavelen(np.arange(intensidad.size))  # nm
+    return pixel_to_wavelen(np.arange(intensity.size))  # nm
+
+
+def get_spectrum(file: str, He_file: str,
+                 plot: Union[str, bool] = False) -> Tuple:
+    '''Dadas dos imagenes tomadas en la misma configuración del espectrómetro
+    construido en las que se observan las lineas de una fuente a estudiar y
+    las lineas del helio, devuelve el espectro asociado a la fuente.
+    '''
+    # Carga de los datos
+    wavelengths = get_wavelength_from_He(He_file)  # nm
+    intensity = get_column_intensity(file)  # a.u.
+    if plot is False:
+        return wavelengths, intensity
+    elif plot == 'above' or plot is True:
+        fig = plt.figure()
+        fig.subplots_adjust(hspace=0)
+        gs = GridSpec(4, 1, figure=fig)
+        axs = [fig.add_subplot(gs[:1, 0]),
+               fig.add_subplot(gs[1:, 0])]
+        img = cv.imread(file,)
+        axs[0].imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB), aspect='auto',)
+        axs[0].set_yticks([])
+        axs[0].set_xticks([])
+        scatter_wavelengths(wavelengths, intensity, axes=axs[1])
+        return wavelengths, intensity, fig, axs
+    elif plot == 'over':
+        fig, ax = plt.subplots(1, 1, )
+        img = cv.imread(file,)
+        ax.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB), aspect='auto',
+                  extent=[wavelengths[0], wavelengths[-1],
+                          0, 1.1*intensity.max()])
+        scatter_wavelengths(wavelengths, intensity, linecolor='w', axes=ax)
+        ax.grid(False)
+        return wavelengths, intensity, fig, [ax, ]
+    else:
+        raise ValueError("`plot` debe tomar uno de los siguientes valores:"
+                         + "\n'above', 'over', True o False.")
