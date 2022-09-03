@@ -61,19 +61,30 @@ def wavelength_to_RGB(wavelength: float) -> Tuple[float, float, float, ]:
 
 
 def scatter_wavelengths(wavelengths: np.ndarray,
-                        intensity: np.ndarray,) -> None:
+                        intensity: np.ndarray,
+                        axes=None) -> None:
     '''Grafica un scatterplot de intensidad en función de la longitud
     de onda en el que los puntos se encuentran coloreados acordemente
     al color de la luz con esta longitud de onda en nanometros.
     '''
-    plt.plot(wavelengths, intensity, '--k', lw=0.5, alpha=0.5)
-    plt.scatter(wavelengths, intensity,
-                s=8*np.log(np.e + 6*intensity/np.max(intensity)),
-                c=[wavelength_to_RGB(lam) for lam in wavelengths],
-                linewidths=0.15, edgecolors='k', zorder=10)
-    plt.grid(True)
-    plt.xlabel('Longitud de onda [nm]')
-    plt.ylabel('Intensidad [a.u]')
+    if axes is None:
+        plt.plot(wavelengths, intensity, '--k', lw=0.5, alpha=0.5)
+        plt.scatter(wavelengths, intensity,
+                    s=8*np.log(np.e + 6*intensity/np.max(intensity)),
+                    c=[wavelength_to_RGB(lam) for lam in wavelengths],
+                    linewidths=0.15, edgecolors='k', zorder=10)
+        plt.grid(True)
+        plt.xlabel('Longitud de onda [nm]')
+        plt.ylabel('Intensidad [a.u]')
+    else:
+        axes.plot(wavelengths, intensity, '--k', lw=0.5, alpha=0.5)
+        axes.scatter(wavelengths, intensity,
+                     s=8*np.log(np.e + 6*intensity/np.max(intensity)),
+                     c=[wavelength_to_RGB(lam) for lam in wavelengths],
+                     linewidths=0.15, edgecolors='k', zorder=10)
+        axes.grid(True)
+        axes.set_xlabel('Longitud de onda [nm]')
+        axes.set_ylabel('Intensidad [a.u]')
     return None
 
 
