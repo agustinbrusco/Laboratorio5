@@ -102,7 +102,7 @@ def get_column_intensity(file: str) -> np.ndarray:
     return np.sum(grayscale, axis=0)/grayscale.shape[0]
 
 
-def get_wavelength_from_He(He_file: str) -> np.ndarray:
+def get_wavelength_from_He(He_file: str, offset: int = 0) -> np.ndarray:
     '''Dada una imagen tomada del monocromador en la que se observan las
     lineas del helio, compara los máximos de intensidad medidos con los
     obtenidos del espectrómetro CCS200 e interpola (y extrapola) linealmente
@@ -118,24 +118,25 @@ def get_wavelength_from_He(He_file: str) -> np.ndarray:
     peak_vals = intensity[peaks[0]]  # a.u. : Intensidad medida en los máximos
     order_max_max = np.argmax(peak_vals)  # Índice del máximo de intensidad
     if order_max_max == 0:  # Considero los primeros dos máximos detectados
-        x0, x1 = peaks[0][:2]
+        x0, x1 = peaks[0][:2] + offset
         pixel_to_wavelen = get_linear_transformation(x0, x1,
                                                      y0=588.87, y1=669.07)
     else:  # Considero el mayor máximo y el anterior
-        x0, x1 = peaks[0][[order_max_max-1, order_max_max]]
+        x0, x1 = peaks[0][[order_max_max-1, order_max_max]] + offset
         pixel_to_wavelen = get_linear_transformation(x0, x1,
                                                      y0=502.60, y1=588.87)
     return pixel_to_wavelen(np.arange(intensity.size))  # nm
 
 
 def get_spectrum(file: str, He_file: str,
-                 plot: Union[str, bool] = False) -> Tuple:
+                 plot: Union[str, bool] = False,
+                 spectrum_offset: int = 0) -> Tuple:
     '''Dadas dos imagenes tomadas en la misma configuración del espectrómetro
     construido en las que se observan las lineas de una fuente a estudiar y
     las lineas del helio, devuelve el espectro asociado a la fuente.
     '''
     # Carga de los datos
-    wavelengths = get_wavelength_from_He(He_file)  # nm
+    wavelengths = get_wavelength_from_He(He_file, spectrum_offset)  # nm
     intensity = get_column_intensity(file)  # a.u.
     if plot is False:
         return wavelengths, intensity
