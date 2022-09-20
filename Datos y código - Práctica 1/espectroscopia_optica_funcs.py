@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Callable, Union, Tuple
 
 import cv2 as cv
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ def balmer_wavelength(n: int) -> float:  # m
     return 1/(Ryd_hidrogeno*(1/4 - 1/n**2))  # m
 
 
-def wavelength_to_RGB(wavelength: float) -> tuple[float, float, float, ]:
+def wavelength_to_RGB(wavelength: float) -> Tuple[float, float, float, ]:
     '''Obtenida de: http://www.noah.org/wiki/Wavelength_to_RGB_in_Python
     Convierte una determinada longitud de onda de luz en un valor de color
     RGB aproximado. La longitud de onda debe darse en nanómetros en el rango
@@ -130,7 +130,7 @@ def get_wavelength_from_He(He_file: str, offset: int = 0) -> np.ndarray:
 
 def get_spectrum(file: str, He_file: str,
                  plot: Union[str, bool] = False,
-                 spectrum_offset: int = 0) -> tuple:
+                 spectrum_offset: int = 0) -> Tuple:
     '''Dadas dos imagenes tomadas en la misma configuración del espectrómetro
     construido en las que se observan las lineas de una fuente a estudiar y
     las lineas del helio, devuelve el espectro asociado a la fuente.
