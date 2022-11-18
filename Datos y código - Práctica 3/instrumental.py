@@ -46,7 +46,7 @@ class TDS1002B:
         # La curva mandada finaliza en el último dato
         self._osci.write("DAT:STOP 2500")
         # Adquisición por sampleo
-        self._osci.write("ACQ:MOD SAMP")
+        # self._osci.write("ACQ:MOD SAMP")
         # Bloquea el control del osciloscopio
         self._osci.write("LOC")
 
