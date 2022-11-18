@@ -109,10 +109,9 @@ def measure_save(set_name,
 
     path_params = destiny_folder + f'/parametros_medicion.txt'
 
-    text_file = open(path_params, 'w')
-    print(string_table)
-    text_file.write(string_table)
-    text_file.close()
+    with open(path_params, 'w') as text_file:
+        print(string_table)
+        text_file.write(string_table)
 
     input('Parámetros ok? Esperando confirmación')
 
@@ -142,7 +141,7 @@ def measure_save(set_name,
         np.savetxt(file, data, delimiter=',', header="Tiempo,Tensión")
 
     print('Mediciones registradas')
-
+    return None
 
 
 """
