@@ -54,8 +54,16 @@ def plot_measurements(tiempo: np.ndarray,
 
 
 def get_peaks(tiempo, channel, window_size):
-    t = np.reshape(tiempo, (-1, window_size))
-    ch = np.reshape(channel, (-1, window_size))
+    if tiempo.size % window_size == 0:
+        t = np.reshape(tiempo,
+                       (-1, window_size))
+        ch = np.reshape(channel,
+                        (-1, window_size))
+    else:
+        t = np.reshape(tiempo[:-(tiempo.size % window_size)],
+                       (-1, window_size))
+        ch = np.reshape(channel[:-(channel.size % window_size)],
+                        (-1, window_size))
     min_ids = ch.argmin(axis=1, keepdims=True)
     t_min = np.take_along_axis(t, min_ids, axis=1).flatten()
     ch_min = np.take_along_axis(ch, min_ids, axis=1).flatten()
@@ -106,6 +114,11 @@ def count_in_period(tiempo,  # s
     N = int(T*f/window_size)
     # print(N)
     # t = np.reshape(tiempo, (-1, N))
-    ch = np.reshape(channel, (-1, N))
+    if channel.size % N == 0:
+        ch = np.reshape(channel,
+                        (-1, N))
+    else:
+        ch = np.reshape(channel[:-(channel.size % N)],
+                        (-1, N))
     counts = np.sum(ch < umbral, axis=1)
     return counts
