@@ -126,27 +126,33 @@ def count_in_period(tiempo,  # s
     return counts
 
 
-def plot_dist(t, v, T, peak_window, freq, umbral, ax):
+def plot_dist(t, v, T, peak_window, freq, umbral,
+              ax=None, text_x=13.5, phantom=False):
     counts = count_in_period(t, v, T, freq, umbral, peak_window)
     unique_vals, count_vals = np.unique(counts, return_counts=True, )
     sum_count = count_vals.sum()
     avg_count = counts.mean()
     # print(mean_count)
     curve_vals = np.arange(unique_vals.min(), unique_vals.max()+1, 1)
-
-    dist_raw = poisson(avg_count).pmf(curve_vals)
     dist_med = count_vals/sum_count
-    popt, pcov = curve_fit(poisson.pmf, unique_vals, dist_med, p0=avg_count)
-    dist_fit = poisson(popt[0]).pmf(curve_vals)
 
-    ax.stem(unique_vals, dist_med,
-            linefmt="k", markerfmt="og", basefmt="None",
-            label="Observada")
-    ax.plot(curve_vals, dist_raw, '-r', lw=1.5, label="Paramétrica")
-    ax.plot(curve_vals, dist_fit, '--C0', lw=1, label="Ajuste")
-    ax.set_ylim(bottom=0)
-    ax.text(13.5, ax.get_ylim()[-1]*0.9,
-            rf"$T$ = {T*1e3:.2n} ms"+"\n" + rf"$\langle m \rangle$ = {avg_count:.3g}",
-            va="top", ha="right", fontsize=12,
-            bbox={'facecolor': 'white', 'boxstyle': 'round'})
+    if ax is None:
+        fig, ax = plt.subplots(1, 1,)
+    if not phantom:
+        dist_raw = poisson(avg_count).pmf(curve_vals)
+        popt, pcov = curve_fit(poisson.pmf, unique_vals, dist_med, p0=avg_count)
+        dist_fit = poisson(popt[0]).pmf(curve_vals)
+
+        ax.stem(unique_vals, dist_med,
+                linefmt="k", markerfmt="og", basefmt="None",
+                label="Observada")
+        ax.plot(curve_vals, dist_raw, '-r', lw=1.5, label="Paramétrica")
+        ax.plot(curve_vals, dist_fit, '--C0', lw=1, label="Ajuste")
+        ax.set_ylim(bottom=0)
+        ax.text(text_x, ax.get_ylim()[-1]*0.9,
+                rf"$T$ = {T*1e3:.2n} ms"+"\n" + rf"$\langle m \rangle$ = {avg_count:.3g}",
+                va="top", ha="right", fontsize=12,
+                bbox={'facecolor': 'white', 'boxstyle': 'round'})
+    else:
+        ax.scatter(unique_vals, dist_med, c="k", alpha=0.5, zorder=7, label="Rueda Fija")
     return ax
