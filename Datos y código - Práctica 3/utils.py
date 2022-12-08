@@ -150,7 +150,7 @@ def plot_dist(t, v, T, peak_window, freq, umbral,
         ax.plot(curve_vals, dist_fit, '--C0', lw=1, label="Ajuste")
         ax.set_ylim(bottom=0)
         ax.text(text_x, ax.get_ylim()[-1]*0.9,
-                rf"$T$ = {T*1e3:.2n} ms"+"\n" + rf"$\langle m \rangle$ = {avg_count:.3g}",
+                rf"$T$ = {T*1e3:.2n} ms"+"\n" + rf"$\langle m \rangle$ = {avg_count:.2n}",
                 va="top", ha="right", fontsize=12,
                 bbox={'facecolor': 'white', 'boxstyle': 'round'})
     else:
